@@ -27,6 +27,10 @@ const Navbar = () => {
       label: "All Prompts",
       href: "/prompts",
     },
+    {
+      label: "Profile",
+      href: "/profile",
+    },
   ];
 
   const handleLogout = async () => {
