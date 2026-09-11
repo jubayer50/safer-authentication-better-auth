@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import { emailOTP } from "better-auth/plugins";
+import { emailOTP, twoFactor } from "better-auth/plugins";
 import { sendEmail } from "./Email/email";
 
 const client = new MongoClient(process.env.MONGODB_URI as string);
@@ -11,6 +11,21 @@ export const auth = betterAuth({
   database: mongodbAdapter(db, {
     client,
   }),
+
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          return {
+            data: {
+              ...user,
+              twoFactorEnabled: true,
+            },
+          };
+        },
+      },
+    },
+  },
 
   emailAndPassword: {
     enabled: true,
@@ -45,6 +60,31 @@ export const auth = betterAuth({
             `,
           });
         }
+      },
+    }),
+
+    // for 2FA
+    twoFactor({
+      otpOptions: {
+        async sendOTP({ user, otp }) {
+          console.log("from two factor plugin auth.ts", { user, otp });
+
+          await sendEmail({
+            to: user.email,
+            subject: "Your login verification code - Safer",
+            html: `
+            <div>
+            <h1>Login verification</h1>
+
+            <p>Your login verification code is:</p>
+
+            <h2>${otp}</h2>
+
+            <p>This code will expire soon.</p>
+            </div>
+            `,
+          });
+        },
       },
     }),
   ],

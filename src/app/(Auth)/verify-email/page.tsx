@@ -1,4 +1,4 @@
-import EmailVerifyForm from "@/app/Component/Auth/EmailVerifyForm";
+import EmailVerifyForm from "@/app/Component/Auth/EmailVerifyForm/EmailVerifyForm";
 
 type VerifyEmailProps = { searchParams: Promise<{ email?: string }> };
 

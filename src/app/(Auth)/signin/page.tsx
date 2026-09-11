@@ -14,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/toast";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 type SignInData = {
@@ -23,7 +22,7 @@ type SignInData = {
 };
 
 const SigninPage = () => {
-  const router = useRouter();
+  // const router = useRouter();
 
   const {
     register,
@@ -37,24 +36,59 @@ const SigninPage = () => {
       ...data,
     });
 
-    if (authData?.token) {
-      toast.add({ type: "success", description: "Signing successful!" });
-      // const response = await fetch("/api/send-email", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     to: data.email,
-      //     subject: "Welcome",
-      //     html: "<p>welcome to our website</p>",
-      //   }),
-      // });
+    // if (authData?.token) {
+    //   toast.add({ type: "success", description: "Signing successful!" });
+    // const response = await fetch("/api/send-email", {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     to: data.email,
+    //     subject: "Welcome",
+    //     html: "<p>welcome to our website</p>",
+    //   }),
+    // });
 
-      router.push("/");
-    } else {
+    // router.push("/");
+    // } else {
+    //   toast.add({
+    //     type: "warning",
+    //     description: error?.statusText || "Something went wrong!",
+    //   });
+    // }
+
+    // Check whether Better Auth created a 2FA challenge
+    if (authData && "twoFactorRedirect" in authData) {
+      const { error: otpError } = await authClient.twoFactor.sendOtp({
+        trustDevice: false,
+      });
+
+      if (otpError) {
+        toast.add({
+          type: "warning",
+          description: otpError.message || "send otp problem",
+        });
+      }
+    }
+
+    if (authData && "twoFactorRedirect" in authData) {
+      const { error: otpError } = await authClient.twoFactor.sendOtp({
+        trustDevice: false,
+      });
+
+      if (otpError) {
+        toast.add({
+          type: "warning",
+          description: otpError.message || "send otp problem",
+        });
+      }
+    }
+
+    if (error) {
       toast.add({
         type: "warning",
         description: error?.statusText || "Something went wrong!",
       });
+      return;
     }
 
     reset();
